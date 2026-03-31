@@ -50,3 +50,29 @@ class Manager:
             total_transfers=transfers_val,
             total_due_pln=transfers_val - bills_val
         )
+    
+    def get_tenants_settlement(self, apartment_key, year, month):
+        if apartment_key not in self.apartments:
+            return None
+        tenants = [
+            t for t in self.tenants.values()
+            if t.apartment == apartment_key
+        ]
+        if len(tenants) == 0:
+            return []
+        total_bills = self.get_apartment_costs(apartment_key, year, month)
+        share = total_bills / len(tenants)
+        results = []
+        for t in tenants:
+            results.append(
+                ApartmentSettlement(  
+                    apartment=apartment_key,
+                    year=year,
+                    month=month,
+                    total_rent_pln=0.0,
+                    total_bills_pln=share,
+                    total_transfers=0.0 if hasattr(ApartmentSettlement, 'total_transfers') else None,
+                    total_due_pln=share
+                )
+            )
+        return results

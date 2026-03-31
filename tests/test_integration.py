@@ -4,7 +4,7 @@ from src.manager import Manager
 from src.models import Parameters
 from src.models import Bill
 from src.models import ApartmentSettlement
-
+from src.models import Tenant
 
 def test_load_data():
     parameters = Parameters()
@@ -108,3 +108,101 @@ def test_apartment_settlement_logic():
     assert settlement_empty.month == 1
 
     assert settlement_none is None
+
+
+def test_tenant_settlement_split():
+    parameters = Parameters()
+    manager = Manager(parameters)
+    manager.apartments['apt-1'] = Apartment(
+        key='apt-1',
+        name='Apartament 1',
+        location='Test',
+        area_m2=50.0,
+        rooms={}
+    )
+    manager.apartments['apt-2'] = Apartment(
+        key='apt-2',
+        name='Apartament 2',
+        location='Test',
+        area_m2=40.0,
+        rooms={}
+    )
+    manager.tenants['t1'] = Tenant(
+        key='t1',
+        name='A',
+        apartment='apt-1',
+        room='1',
+        rent_pln=1000.0,
+        deposit_pln=1000.0,
+        date_agreement_from='2024-01-01',
+        date_agreement_to='2024-12-31'
+    )
+    manager.tenants['t2'] = Tenant(
+        key='t2',
+        name='B',
+        apartment='apt-1',
+        room='2',
+        rent_pln=1000.0,
+        deposit_pln=1000.0,
+        date_agreement_from='2024-01-01',
+        date_agreement_to='2024-12-31'
+    )
+    manager.tenants['t3'] = Tenant(
+        key='t3',
+        name='C',
+        apartment='apt-2',
+        room='1',
+        rent_pln=1000.0,
+        deposit_pln=1000.0,
+        date_agreement_from='2024-01-01',
+        date_agreement_to='2024-12-31'
+    )
+    manager.bills.append(Bill(
+        apartment='apt-1',
+        settlement_year=2024,
+        settlement_month=1,
+        amount_pln=300.0,
+        type='rent',
+        date_due='2024-01-10'
+    ))
+    manager.bills.append(Bill(
+        apartment='apt-2',
+        settlement_year=2024,
+        settlement_month=1,
+        amount_pln=150.0,
+        type='rent',
+        date_due='2024-01-10'
+    ))
+    manager.apartments['apt-zero'] = Apartment(
+    key='apt-zero',
+    name='Zero',
+    location='Test',
+    area_m2=10.0,
+    rooms={}
+    )
+    settlements = manager.get_tenants_settlement('apt-1', 2024, 1)
+    assert settlements is not None
+    assert len(settlements) == 2
+    values = [s.total_due_pln for s in settlements]
+    assert sum(values) == 300.0
+    assert values[0] == values[1]  # równy podział
+    assert all(v == 150.0 for v in values)
+    settlements_single = manager.get_tenants_settlement('apt-2', 2024, 1)
+    assert settlements_single is not None
+    assert len(settlements_single) == 1
+    assert settlements_single[0].total_due_pln == 150.0
+    manager.apartments['apt-empty'] = Apartment(
+        key='apt-empty',
+        name='Empty',
+        location='Test',
+        area_m2=20.0,
+        rooms={}
+    )
+    settlements_empty = manager.get_tenants_settlement('apt-empty', 2024, 1)
+    assert settlements_empty == [] or settlements_empty is None
+    assert all(s.total_due_pln >= 0 for s in settlements)
+    assert settlements[0].month == 1
+    assert settlements[0].year == 2024
+    assert all(s.apartment == 'apt-1' for s in settlements)
+    settlements_none = manager.get_tenants_settlement('does-not-exist', 2024, 1)
+    assert settlements_none is None
