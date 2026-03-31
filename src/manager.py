@@ -1,5 +1,4 @@
-from src.models import Apartment, Bill, Parameters, Tenant, Transfer
-
+from src.models import Apartment, Bill, Parameters, Tenant, Transfer, ApartmentSettlement
 
 class Manager:
     def __init__(self, parameters: Parameters):
@@ -19,7 +18,6 @@ class Manager:
         self.bills = Bill.from_json_file(self.parameters.bills_json_path)
         
     def get_apartment_costs(self, apartment_key, year = None, month = None):
-        
         suma = 0
         
         if apartment_key not in self.apartments:
@@ -36,19 +34,19 @@ class Manager:
             
         return suma
     
-    def AppartmentSettlement(self, apartment_key, year, month):
+    def get_apartment_settlement(self, apartment_key, year, month):
         if apartment_key not in self.apartments:
             return None
-        
-        wartosc = self.get_apartment_costs(apartment_key, year, month)
-        
-        total_transfers = 0.0
-        
+
+        bills_val = self.get_apartment_costs(apartment_key, year, month)
+        transfers_val = 0.0
+
         return ApartmentSettlement(
-            apartment_key=apartment_key,
+            apartment=apartment_key,
             year=year,
             month=month,
-            total_bills=total_bills,
-            total_transfers=total_transfers
+            total_rent_pln=0.0,
+            total_bills_pln=bills_val,
+            total_transfers=transfers_val,
+            total_due_pln=transfers_val - bills_val
         )
-    
