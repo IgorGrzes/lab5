@@ -18,7 +18,7 @@ class Manager:
         self.transfers = Transfer.from_json_file(self.parameters.transfers_json_path)
         self.bills = Bill.from_json_file(self.parameters.bills_json_path)
         
-    def get_apartment_costs(self, apartment_key, year, month):
+    def get_apartment_costs(self, apartment_key, year = None, month = None):
         
         suma = 0
         
@@ -28,9 +28,9 @@ class Manager:
         for bill in self.bills:
             if bill.apartment != apartment_key:
                 continue
-            if bill.settlement_month != month:
+            if year is not None and bill.settlement_year != year:
                 continue
-            if bill.settlement_year != year:
+            if month is not None and bill.settlement_month != month:
                 continue
             suma = suma + bill.amount_pln    
             
