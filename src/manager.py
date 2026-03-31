@@ -35,4 +35,19 @@ class Manager:
             suma = suma + bill.amount_pln    
             
         return suma
+    
+    def AppartmentSettlement(self, apartment_key, year, month):
+        if apartment_key not in self.apartments:
+            return None
         
+        wartosc = self.get_apartment_costs(apartment_key, year, month)
+        
+        total_transfers = 0.0
+        
+        return ApartmentSettlement(
+            apartment_key=apartment_key,
+            year=year,
+            month=month,
+            total_bills=total_bills,
+            total_transfers=total_transfers
+        )
