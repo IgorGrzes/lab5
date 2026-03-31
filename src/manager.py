@@ -51,3 +51,4 @@ class Manager:
             total_bills=total_bills,
             total_transfers=total_transfers
         )
+    
